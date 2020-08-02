@@ -4,5 +4,5 @@ This is a simple game tic-tac-toe(O-X) made using javascript,**minimax algorithm
 # Screen Shot
 ![alt text](https://github.com/nikhilrajpandey/tic-tac-toe/raw/master/ScreenShot.png "Screen Shot")
 
-## Contributions
+# Contributions
 Nikhil Raj Pandey
