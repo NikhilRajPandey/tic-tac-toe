@@ -8,6 +8,8 @@ let board = [
     ['_', '_', '_'],
     ['_', '_', '_'],
 ]
+let game_over = false;
+let winner = 0;
 
 function setup() {
     createCanvas(windowHeight - 150, windowHeight - 150);
@@ -52,7 +54,7 @@ function whoWin() {
     let winned = undefined;
     // Checking Horizontal,Vertical side and i here means rows and j here means columns
     for (let i = 0; i < board.length; i++) {
-        let ias_hv = [true,true];
+        let ias_hv = [true, true];
         // Sorry for my bad variable naming but it is - 'is all same horizontal and vertical'
         // Horizontal Here
         let j;
@@ -62,91 +64,93 @@ function whoWin() {
                 ias_hv[0] = false;
             }
             // Vertical Checking
-            if(board[j][i] != board[j+1][i]){
+            if (board[j][i] != board[j + 1][i]) {
                 ias_hv[1] = false;
             }
         }
-        if (ias_hv[0] && board[i][j] != '_' ) {
+        if (ias_hv[0] && board[i][j] != '_') {
             winned = board[i][j];
         }
-        else if(ias_hv[1] && board[j][i] != '_'){
+        else if (ias_hv[1] && board[j][i] != '_') {
             winned = board[j][i];
         }
     }
     // Now checking diagonally I know i can do it by for loop for checking in board more than 9 tiles but i am so lazy
-    if(board[0][0] == board[1][1] && board[1][1] == board[2][2]){
-        winned = board[1][1];
+    if (board[1][1] == player_default || board[1][1] == computer_default) {
+        if (board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
+            winned = board[1][1];
+        }
+        else if (board[0][2] == board[1][1] && board[2][0] == board[1][1]) {
+            winned = board[1][1];
+        }
     }
-    else if(board[0][2] == board[1][1] && board[2][0]){
-        winned = board[1][1];
-    }
-    if(winned == computer_default){
+    if (winned == computer_default) {
         return -1;
     }
-    else if(winned == player_default){
+    else if (winned == player_default) {
         return 1;
     }
-    else{
+    else {
         return 0;
     }
 }
+function isGameOver() {
+    let cur_win = whoWin();
+    if (giveWhiteSpaces().length == 0 || whoWin() != 0) {
+        game_over = true;
+        winner = cur_win;
+    }
+}
+
 
 // Min is Computer and Max is Player
-function miniMax(turn,update_value) {
+function miniMax(turn, update_value) {
     let avlWhSpace = giveWhiteSpaces(board);
-    let returning_index;
+    let returning;
     // avlWhSpace means avlaibleWhiteSpace
-    if(avlWhSpace.length == 0){
+    if (avlWhSpace.length == 0) {
         return whoWin(board);
     }
-    else{
+    else {
         let all_recursion_returns = [];
         let next_turn;
-        if(turn == computer_default){next_turn=player_default;}
-        else if(turn == player_default){next_turn=computer_default};
+        if (turn == computer_default) { next_turn = player_default; }
+        else if (turn == player_default) { next_turn = computer_default };
         // Trying in all avlaiable white spaces so that i can minimax
-        for(let i=0;i<avlWhSpace.length;i++){
+        for (let i = 0; i < avlWhSpace.length; i++) {
             let old_value = board[avlWhSpace[i][0]][avlWhSpace[i][1]];
             board[avlWhSpace[i][0]][avlWhSpace[i][1]] = turn;
-            let recursion_return = miniMax(next_turn,false);
+            let recursion_return = miniMax(next_turn, false);
             // Undo the value
             board[avlWhSpace[i][0]][avlWhSpace[i][1]] = old_value;
             all_recursion_returns.push(recursion_return);
         }
-        if(turn == computer_default){
-            returning_index = all_recursion_returns.indexOf(Math.min(...all_recursion_returns));
+        if (turn == computer_default) {
+            returning = Math.min(...all_recursion_returns);
         }
-        else if(turn == player_default){
-            returning_index = all_recursion_returns.indexOf(Math.max(...all_recursion_returns));
+        else if (turn == player_default) {
+            returning = Math.max(...all_recursion_returns);
         }
-        if(update_value){
+        if (update_value) {
+            let returning_index = all_recursion_returns.indexOf(returning);
             let x = avlWhSpace[returning_index][0];
             let y = avlWhSpace[returning_index][1];
             board[x][y] = computer_default;
+            isGameOver();
         }
-        return returning_index;
+        return returning;
     }
 }
-function logic_of_game(){
-    console.log(whoWin());
-    if(giveWhiteSpaces().length == 0 || whoWin()!=0){
-        if(whoWin()== -1){
-            console.log("Computer Wins");
-        }
-        else if(whoWin() == 1){
-            console.log("player wins");
-        }
-        else{
-            console.log("tie");
-        }
-    }
-    else{
-        miniMax(computer_default,true);
+
+function logic_of_game() {
+    if (!game_over) {
+        miniMax(computer_default, true);
     }
 }
 
 
 function mouseClicked() {
+    if (!game_over) {
         for (let start_index_1 = 0; start_index_1 < line_cordinates[0].length - 1; start_index_1++) {
             for (let start_index_2 = 0; start_index_2 < line_cordinates[0].length - 1; start_index_2++) {
                 let end_index_1 = start_index_1 + 1;
@@ -159,6 +163,7 @@ function mouseClicked() {
             }
         }
         logic_of_game();
+    }
 }
 
 function draw() {
@@ -166,24 +171,24 @@ function draw() {
     // Basic Lines Drawing For Seperation
     strokeWeight(4);
     stroke(color('black'));
-    for (let no_drawned = 0; no_drawned < all_lines.length; no_drawned++) {
-        let l_c = all_lines[no_drawned];
-        // l_c means line cordiantes
-        line(l_c[0], l_c[1], l_c[2], l_c[3]);
+    if (!game_over) {
+        for (let no_drawned = 0; no_drawned < all_lines.length; no_drawned++) {
+            let l_c = all_lines[no_drawned];
+            // l_c means line cordiantes
+            line(l_c[0], l_c[1], l_c[2], l_c[3]);
+        }
+        draw_board();
     }
-    // draw_board();
-    strokeWeight(18);
-    stroke(color('white'));
-    // point(0,0);
-    // point(0,height/3);
-    point(0, width / 3);
-    // point(0,width * 2 / 3);
-    // point(0,width);
-    // point(height / 3,0);
-    // point(width/3,width*2/3);
-    // point(width/3,height/3);
-    // for (let i = 0; i < line_cordinates.length; i++) {
-    //     point(line_cordinates[0][i],line_cordinates[1][i]);
-    // }
-    draw_board();
+    else {
+        textSize(50);
+        if (winner == -1) {
+            text('Game Over\n' + computer_default + ' Wins', 100, 100);
+        }
+        else if (winner == 1) {
+            text('Game Over\n' + player_default + ' Wins', 100, 100);
+        }
+        else {
+            text('No one Wins\n', 100, 100);
+        }
+    }
 }
