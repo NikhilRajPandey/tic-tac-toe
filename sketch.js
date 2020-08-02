@@ -92,7 +92,7 @@ function whoWin() {
 }
 
 // Min is Computer and Max is Player
-function miniMax(turn,update_value=true) {
+function miniMax(turn,update_value) {
     let avlWhSpace = giveWhiteSpaces(board);
     let returning_index;
     // avlWhSpace means avlaibleWhiteSpace
@@ -106,40 +106,47 @@ function miniMax(turn,update_value=true) {
         else if(turn == player_default){next_turn=computer_default};
         // Trying in all avlaiable white spaces so that i can minimax
         for(let i=0;i<avlWhSpace.length;i++){
-            let old_value = [avlWhSpace[i][0]][avlWhSpace[i][1]];
+            let old_value = board[avlWhSpace[i][0]][avlWhSpace[i][1]];
             board[avlWhSpace[i][0]][avlWhSpace[i][1]] = turn;
             let recursion_return = miniMax(next_turn,false);
+            // Undo the value
             board[avlWhSpace[i][0]][avlWhSpace[i][1]] = old_value;
             all_recursion_returns.push(recursion_return);
         }
         if(turn == computer_default){
-            returning_index = all_recursion_returns.indexOf(Math.min(all_recursion_returns));
+            returning_index = all_recursion_returns.indexOf(Math.min(...all_recursion_returns));
         }
         else if(turn == player_default){
-            returning_index = all_recursion_returns.indexOf(Math.max(all_recursion_returns));
+            returning_index = all_recursion_returns.indexOf(Math.max(...all_recursion_returns));
         }
         if(update_value){
-            board[all_recursion_returns[returning_index][0]][all_recursion_returns[returning_index][1]] = turn;
+            let x = avlWhSpace[returning_index][0];
+            let y = avlWhSpace[returning_index][1];
+            board[x][y] = computer_default;
         }
+        return returning_index;
     }
 }
 function logic_of_game(){
-    if(giveWhiteSpaces().length == 0){
+    console.log(whoWin());
+    if(giveWhiteSpaces().length == 0 || whoWin()!=0){
         if(whoWin()== -1){
             console.log("Computer Wins");
         }
-        else{
+        else if(whoWin() == 1){
             console.log("player wins");
+        }
+        else{
+            console.log("tie");
         }
     }
     else{
-        miniMax(computer_default);
+        miniMax(computer_default,true);
     }
 }
 
 
-function isClickedThere() {
-    if (mouseIsPressed && mouseButton == LEFT) {
+function mouseClicked() {
         for (let start_index_1 = 0; start_index_1 < line_cordinates[0].length - 1; start_index_1++) {
             for (let start_index_2 = 0; start_index_2 < line_cordinates[0].length - 1; start_index_2++) {
                 let end_index_1 = start_index_1 + 1;
@@ -152,7 +159,6 @@ function isClickedThere() {
             }
         }
         logic_of_game();
-    }
 }
 
 function draw() {
@@ -180,5 +186,4 @@ function draw() {
     //     point(line_cordinates[0][i],line_cordinates[1][i]);
     // }
     draw_board();
-    isClickedThere();
 }
