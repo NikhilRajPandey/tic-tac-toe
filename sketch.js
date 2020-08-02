@@ -1,5 +1,6 @@
 let player_default = 'X';
 let computer_default = 'O';
+// First Turn will be of player
 let all_lines;
 let line_cordinates;
 let board = [
@@ -36,48 +37,48 @@ function draw_board() {
         }
     }
 }
-function giveWhiteSpaces(param_board) {
+function giveWhiteSpaces() {
     let returning_list = [];
-    for (let i = 0; i < param_board.length; i++) {
-        for (let j = 0; j < param_board[0].length; j++) {
-            if (param_board[i][j] == '_') {
+    for (let i = 0; i < board.length; i++) {
+        for (let j = 0; j < board[0].length; j++) {
+            if (board[i][j] == '_') {
                 returning_list.push([i, j]);
             }
         }
     }
     return returning_list;
 }
-function whoWin(param_board) {
+function whoWin() {
     let winned = undefined;
     // Checking Horizontal,Vertical side and i here means rows and j here means columns
-    for (let i = 0; i < param_board.length; i++) {
+    for (let i = 0; i < board.length; i++) {
         let ias_hv = [true,true];
         // Sorry for my bad variable naming but it is - 'is all same horizontal and vertical'
         // Horizontal Here
         let j;
-        for (j = 0; j < param_board[0].length - 1; j++) {
+        for (j = 0; j < board[0].length - 1; j++) {
             // Horizontal checking
-            if (param_board[i][j] != param_board[i][j + 1]) {
+            if (board[i][j] != board[i][j + 1]) {
                 ias_hv[0] = false;
             }
             // Vertical Checking
-            if(param_board[j][i] != param_board[j+1][i]){
+            if(board[j][i] != board[j+1][i]){
                 ias_hv[1] = false;
             }
         }
-        if (ias_hv[0] && param_board[i][j] != '_' ) {
-            winned = param_board[i][j];
+        if (ias_hv[0] && board[i][j] != '_' ) {
+            winned = board[i][j];
         }
-        else if(ias_hv[1] && param_board[j][i] != '_'){
-            winned = param_board[j][i];
+        else if(ias_hv[1] && board[j][i] != '_'){
+            winned = board[j][i];
         }
     }
     // Now checking diagonally I know i can do it by for loop for checking in board more than 9 tiles but i am so lazy
-    if(param_board[0][0] == param_board[1][1] && param_board[1][1] == param_board[2][2]){
-        winned = param_board[1][1];
+    if(board[0][0] == board[1][1] && board[1][1] == board[2][2]){
+        winned = board[1][1];
     }
-    else if(param_board[0][2] == param_board[1][1] && param_board[2][0]){
-        winned = param_board[1][1];
+    else if(board[0][2] == board[1][1] && board[2][0]){
+        winned = board[1][1];
     }
     if(winned == computer_default){
         return -1;
@@ -91,11 +92,12 @@ function whoWin(param_board) {
 }
 
 // Min is Computer and Max is Player
-function miniMax(param_board, turn) {
-    let avlWhSpace = giveWhiteSpaces(param_board);
+function miniMax(turn,update_value=true) {
+    let avlWhSpace = giveWhiteSpaces(board);
+    let returning_index;
     // avlWhSpace means avlaibleWhiteSpace
     if(avlWhSpace.length == 0){
-        return whoWin(param_board);
+        return whoWin(board);
     }
     else{
         let all_recursion_returns = [];
@@ -105,21 +107,34 @@ function miniMax(param_board, turn) {
         // Trying in all avlaiable white spaces so that i can minimax
         for(let i=0;i<avlWhSpace.length;i++){
             let old_value = [avlWhSpace[i][0]][avlWhSpace[i][1]];
-            param_board[avlWhSpace[i][0]][avlWhSpace[i][1]] = turn;
-            let recursion_return = miniMax(param_board,next_turn);
-            param_board[avlWhSpace[i][0]][avlWhSpace[i][1]] = old_value;
+            board[avlWhSpace[i][0]][avlWhSpace[i][1]] = turn;
+            let recursion_return = miniMax(next_turn,false);
+            board[avlWhSpace[i][0]][avlWhSpace[i][1]] = old_value;
             all_recursion_returns.push(recursion_return);
         }
         if(turn == computer_default){
-            return Math.min(all_recursion_returns);
+            returning_index = all_recursion_returns.indexOf(Math.min(all_recursion_returns));
         }
         else if(turn == player_default){
-            return Math.max(all_recursion_returns);
+            returning_index = all_recursion_returns.indexOf(Math.max(all_recursion_returns));
+        }
+        if(update_value){
+            board[all_recursion_returns[returning_index][0]][all_recursion_returns[returning_index][1]] = turn;
         }
     }
 }
 function logic_of_game(){
-
+    if(giveWhiteSpaces().length == 0){
+        if(whoWin()== -1){
+            console.log("Computer Wins");
+        }
+        else{
+            console.log("player wins");
+        }
+    }
+    else{
+        miniMax(computer_default);
+    }
 }
 
 
